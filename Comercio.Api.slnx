@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="Comercio.Api.IntegrationTest/Comercio.Api.IntegrationTest.csproj" Id="c8a66731-276f-435b-9c0a-59162d24d723" />
+  <Project Path="Comercio.Api.Tests/Comercio.Api.Tests.csproj" />
+  <Project Path="Comercio.Api/Comercio.Api.csproj" />
+</Solution>
