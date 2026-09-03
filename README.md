@@ -7,7 +7,7 @@ Framework Core y SQL Server.
 > (unitarios, integración con Docker, y contra la API completa). Es la primera pieza de
 > un e-commerce más amplio, desarrollado de forma incremental.
 
-## 🚀 Características
+## Características
 
 - CRUD completo de productos, con paginación, búsqueda y filtros de precio.
 - Validaciones de entrada con FluentValidation.
@@ -19,7 +19,7 @@ Framework Core y SQL Server.
 - Cobertura de tests en tres niveles: unitarios, integración con Testcontainers, y contra la
   API completa — incluyendo escenarios reales de idempotencia y concurrencia.
 
-## 🛠️ Tecnologías
+## Tecnologías
 
 - .NET 10 / ASP.NET Core
 - Entity Framework Core + SQL Server
@@ -27,7 +27,7 @@ Framework Core y SQL Server.
 - AutoMapper
 - xUnit + Moq + Testcontainers
 
-## 📦 Cómo correrlo localmente
+## Cómo correrlo localmente
 
 ### Requisitos previos
 
@@ -67,14 +67,14 @@ Framework Core y SQL Server.
    `https://localhost:7069`). Podés explorar los endpoints desde Swagger/OpenAPI o desde la
    documentación pública (ver más abajo).
 
-## 📄 Documentación de la API
+## Documentación de la API
 
 La documentación completa de todos los endpoints, con ejemplos reales de request y response
 para cada caso (éxito, validación, conflicto, no encontrado), está publicada en Postman:
 
-👉 **[Ver documentación completa](https://documenter.getpostman.com/view/53907460/2sBYAvuqMX)**
+**[Ver documentación completa](https://documenter.getpostman.com/view/53907460/2sBYAvuqMX)**
 
-## 🏗️ Arquitectura
+## Arquitectura
 
 El proyecto sigue una arquitectura en capas clásica, con responsabilidades bien separadas:
 
@@ -100,7 +100,7 @@ Controller → Service → Repository → AppDbContext (EF Core)
   traducción entre el resultado interno de negocio (`Result`) y la respuesta HTTP estándar
   en formato RFC 7807, evitando que cada controller arme sus propios mensajes de error.
 
-## 📌 Decisiones de diseño
+## Decisiones de diseño
 
 - **Idempotencia sin token**: en vez de un `Idempotency-Key` por header, se optó por un
   índice único sobre `Nombre` a nivel de base de datos, combinado con un chequeo previo en
@@ -119,7 +119,7 @@ Controller → Service → Repository → AppDbContext (EF Core)
   precisión decimal); y tests contra la API completa (`WebApplicationFactory`) para el
   pipeline HTTP end-to-end (filtros de validación, formato de errores).
 
-## 🧪 Testing
+## Testing
 
 El proyecto cuenta con tres niveles de testing:
 
@@ -140,7 +140,7 @@ dotnet test Comercio.Api.Tests
 dotnet test Comercio.Api.IntegrationTest
 ```
 
-## 📋 Roadmap
+## Roadmap
 
 Este proyecto se desarrolla de forma incremental. El módulo de **Productos** está
 completo (CRUD, paginación, validaciones, idempotencia, concurrencia, y testing en tres
