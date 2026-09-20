@@ -1,0 +1,50 @@
+<div class="container mt-5" style="max-width: 420px;">
+  <h2 class="mb-4 text-center">Iniciar sesión</h2>
+
+  @if (errorCredencial()) {
+    <div class="alert alert-danger">{{ errorCredencial() }}</div>
+  }
+
+  @if (errorGeneral()) {
+    <div class="alert alert-danger">{{ errorGeneral() }}</div>
+  }
+
+  <form [formGroup]="loginForm" (ngSubmit)="userLogin()">
+
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input type="email" class="form-control" formControlName="email"
+        [class.is-invalid]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched">
+
+      @if (loginForm.get('email')?.hasError('required') && loginForm.get('email')?.touched) {
+        <div class="invalid-feedback d-block">El email es obligatorio.</div>
+      }
+      @if (loginForm.get('email')?.hasError('email') && loginForm.get('email')?.touched) {
+        <div class="invalid-feedback d-block">El formato del email no es válido.</div>
+      }
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">Contraseña</label>
+      <input type="password" class="form-control" formControlName="password"
+        [class.is-invalid]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched">
+
+      @if (loginForm.get('password')?.hasError('required') && loginForm.get('password')?.touched) {
+        <div class="invalid-feedback d-block">La contraseña es obligatoria.</div>
+      }
+    </div>
+
+    <button type="submit" class="btn btn-dark w-100" [disabled]="cargando()">
+      @if (cargando()) {
+        <span class="spinner-border spinner-border-sm me-2"></span> Ingresando...
+      } @else {
+        Ingresar
+      }
+    </button>
+
+    <p class="text-center mt-3 mb-0">
+      ¿No tenés cuenta? <a routerLink="/register">Registrate</a>
+    </p>
+
+  </form>
+</div>

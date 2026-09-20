@@ -5,7 +5,8 @@
         Ninguno,
         NotFound,
         Conflict,
-        Validation
+        Validation,
+        InvalidCredentials
     }
     public class Result
     {

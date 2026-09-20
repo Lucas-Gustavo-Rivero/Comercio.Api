@@ -3,6 +3,7 @@ using Comercio.Api.DTOs.Producto;
 using Comercio.Api.Extensions;
 using Comercio.Api.Filters;
 using Comercio.Api.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -42,6 +43,7 @@ namespace Comercio.Api.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Administrador")]
         [ServiceFilter(typeof(ValidationFilter<ProductoCrearDto>))]
         public async Task<ActionResult<ProductoDto>> CrearProducto(ProductoCrearDto dto)
         {
@@ -58,6 +60,7 @@ namespace Comercio.Api.Controllers
 
         [HttpPut("{id}")]
         [ServiceFilter(typeof(ValidationFilter<ProductoModificarDto>))]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> ModificarProducto(int id, ProductoModificarDto dto)
         {
             if (id != dto.Id)
@@ -76,6 +79,7 @@ namespace Comercio.Api.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> EliminarProducto(int id)
         {
             var resultado = await _productoService.EliminarProductoAsync(id);

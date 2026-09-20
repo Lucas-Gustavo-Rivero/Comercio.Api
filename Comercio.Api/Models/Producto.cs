@@ -11,5 +11,9 @@ namespace Comercio.Api.Models
         public string? UrlImagen { get; set; }
         public byte[] RowVersion { get; set; } = Array.Empty<byte>();
 
+        //Propiedad de navegacion
+
+        public ICollection<CarritoItem> CarritoItems { get; set; } = [];
+
     }
 }

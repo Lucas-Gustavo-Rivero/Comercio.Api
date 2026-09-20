@@ -1,0 +1,72 @@
+<div class="container mt-4" style="max-width: 600px;">
+  <h2 class="mb-4">Crear producto</h2>
+
+  @if (errorConflicto()) {
+    <div class="alert alert-warning">{{ errorConflicto() }}</div>
+  }
+
+  @if (errorGeneral()) {
+    <div class="alert alert-danger">{{ errorGeneral() }}</div>
+  }
+
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+
+    <div class="mb-3">
+      <label class="form-label">Nombre</label>
+      <input type="text" class="form-control" formControlName="nombre"
+        [class.is-invalid]="form.get('nombre')?.invalid && form.get('nombre')?.touched">
+
+      @if (form.get('nombre')?.hasError('required') && form.get('nombre')?.touched) {
+        <div class="invalid-feedback d-block">El nombre es obligatorio.</div>
+      }
+      @if (form.get('nombre')?.hasError('maxlength')) {
+        <div class="invalid-feedback d-block">Máximo 50 caracteres.</div>
+      }
+      @if (errorDeCampo('nombre'); as msg) {
+        <div class="invalid-feedback d-block">{{ msg }}</div>
+      }
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Descripción</label>
+      <textarea class="form-control" formControlName="descripcion" rows="3"></textarea>
+    </div>
+
+    <div class="row">
+      <div class="col-6 mb-3">
+        <label class="form-label">Precio</label>
+        <input type="number" step="0.01" class="form-control" formControlName="precio"
+          [class.is-invalid]="form.get('precio')?.invalid && form.get('precio')?.touched">
+        @if (errorDeCampo('precio'); as msg) {
+          <div class="invalid-feedback d-block">{{ msg }}</div>
+        }
+      </div>
+
+      <div class="col-6 mb-3">
+        <label class="form-label">Stock</label>
+        <input type="number" class="form-control" formControlName="stock"
+          [class.is-invalid]="form.get('stock')?.invalid && form.get('stock')?.touched">
+        @if (errorDeCampo('stock'); as msg) {
+          <div class="invalid-feedback d-block">{{ msg }}</div>
+        }
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <label class="form-label">URL de imagen</label>
+      <input type="text" class="form-control" formControlName="urlImagen">
+    </div>
+
+    <div class="d-flex gap-2">
+      <button type="submit" class="btn btn-dark px-4" [disabled]="guardando()">
+        @if (guardando()) {
+          <span class="spinner-border spinner-border-sm me-2"></span> Guardando...
+        } @else {
+          Crear producto
+        }
+      </button>
+      <a routerLink="/productos" class="btn btn-outline-secondary">Cancelar</a>
+    </div>
+
+  </form>
+</div>

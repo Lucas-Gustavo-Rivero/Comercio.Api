@@ -3,6 +3,7 @@ using Comercio.Api.DTOs.Paginacion;
 using Comercio.Api.DTOs.Producto;
 using Comercio.Api.Models;
 using Comercio.Api.Service.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,19 +11,24 @@ using Renci.SshNet.Sftp;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text;
 
 namespace Comercio.Api.IntegrationTest.Integration
 {
-    public class ProductosControllerTests: IClassFixture<ProductoApiFixture>
+    public class ProductosControllerTests: IClassFixture<ComercioApiFixture>
     {
         private readonly HttpClient _client;
         private readonly AppDbContext _context;
+        private readonly ComercioApiFixture _fixture;
         private const string RutaBase = "/api/productos";
 
-        public ProductosControllerTests(ProductoApiFixture fixture)
+
+        public ProductosControllerTests(ComercioApiFixture fixture)
         {
+            _fixture = fixture;
+
             _client = fixture.HttpClient;
 
             var options = new DbContextOptionsBuilder<AppDbContext>().UseSqlServer(fixture.DbContext.Database.GetConnectionString()).Options;
@@ -31,9 +37,11 @@ namespace Comercio.Api.IntegrationTest.Integration
         }
 
         [Fact]
-        public async Task PostProducto_ConNombreVacio_DevuelveBadRequest()
+        public async Task PostProducto_ComoAdministradorConNombreVacio_DevuelveBadRequest()
         {
             //ARRANGE
+            var token = await _fixture.ObtenerTokenAdminAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var dto = new ProductoCrearDto { Nombre = "" , Precio = 123, Stock = 1};
 
@@ -47,9 +55,11 @@ namespace Comercio.Api.IntegrationTest.Integration
         }
 
         [Fact]
-        public async Task PostProducto_DatosValidos_DevuelveCreatedConProductoDto()
+        public async Task PostProducto_ComoAdministradorDatosValidos_DevuelveCreatedConProductoDto()
         {
             //ARRANGE
+            var token = await _fixture.ObtenerTokenAdminAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var nombreUnico = $"Producto-{Guid.NewGuid()}";
             var dto = new ProductoCrearDto { Nombre = nombreUnico, Precio = 123, Stock = 2 };
 
@@ -68,9 +78,11 @@ namespace Comercio.Api.IntegrationTest.Integration
         }
 
         [Fact]
-        public async Task EliminarProducto_IdInvalido_DevuelveNotFound()
+        public async Task EliminarProducto_ComoAdministradorIdInvalido_DevuelveNotFound()
         {
             //ARRANGE
+            var token = await _fixture.ObtenerTokenAdminAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var idInvalido = 999;
 
             //ACT
@@ -87,9 +99,11 @@ namespace Comercio.Api.IntegrationTest.Integration
         }
 
         [Fact]
-        public async Task EliminarProducto_IdValido_DevuelveNoContent()
+        public async Task EliminarProducto_ComoAdministradorIdValido_DevuelveNoContent()
         {
             //ARRANGE
+            var token = await _fixture.ObtenerTokenAdminAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var nombreUnico = $"Producto-{Guid.NewGuid()}";
             var producto = new Producto { Nombre = nombreUnico, Precio = 100, Stock = 1, RowVersion = Array.Empty<byte>() };
 
@@ -113,9 +127,11 @@ namespace Comercio.Api.IntegrationTest.Integration
         }
 
         [Fact]
-        public async Task ModificarProducto_IdsNoCoinciden_DevuelveBadRequest()
+        public async Task ModificarProducto_ComoAdministradorIdsNoCoinciden_DevuelveBadRequest()
         {
             //ARRANGE
+            var token = await _fixture.ObtenerTokenAdminAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
             var dto = new ProductoModificarDto
             {
@@ -145,9 +161,11 @@ namespace Comercio.Api.IntegrationTest.Integration
         }
 
         [Fact]
-        public async Task ModificarProducto_ProductoNoExist_DevuelveNotFound()
+        public async Task ModificarProducto_ComoAdministradorProductoNoExist_DevuelveNotFound()
         {
             //ARRANGE
+            var token = await _fixture.ObtenerTokenAdminAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var idRuta = 99999;
 
             var dto = new ProductoModificarDto { Id = idRuta, Nombre = "test", Stock = 2, Precio = 1, RowVersion = new byte[] { 1 } };
@@ -169,9 +187,11 @@ namespace Comercio.Api.IntegrationTest.Integration
         }
 
         [Fact]
-        public async Task ModificarProducto_ProductoExiste_DevuelveNoContent()
+        public async Task ModificarProducto_ComoAdministradorProductoExiste_DevuelveNoContent()
         {
             //ARRANGE
+            var token = await _fixture.ObtenerTokenAdminAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var nombreUnico = $"Producto-{Guid.NewGuid()}";
             var producto = new Producto { Nombre = nombreUnico, Stock = 1, Precio = 1, RowVersion = Array.Empty<byte>() };
             _context.Productos.Add(producto);
@@ -202,10 +222,11 @@ namespace Comercio.Api.IntegrationTest.Integration
         }
 
         [Fact]
-        public async Task ModificarProducto_RowVersionDesactualizado_DevuelveConflict()
+        public async Task ModificarProducto_ComoAdministradorRowVersionDesactualizado_DevuelveConflict()
         {
             //ARRANGE
-
+            var token = await _fixture.ObtenerTokenAdminAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
             var nombreUnico = $"Producto-{Guid.NewGuid()}";
             var producto = new Producto { Nombre = nombreUnico, Stock = 3, Precio =  3 , RowVersion = Array.Empty<byte>()};
             _context.Productos.Add(producto);
@@ -490,5 +511,85 @@ namespace Comercio.Api.IntegrationTest.Integration
 
             Assert.Empty(nombresPagina1.Intersect(nombresPagina2));
         }
+
+        [Fact]
+        public async Task EliminarProducto_SinToken_DevuelveUnauthorized()
+        {
+            //ACT
+            var response = await _client.DeleteAsync($"{RutaBase}/1");
+
+            //ASSERT
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task EliminarProducto_ComoUsuario_DevuelveForbidden()
+        {
+            //ARRANGE
+            var token = await _fixture.ObtenerTokenUsuarioAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            //ACT
+
+            var response = await _client.DeleteAsync($"{RutaBase}/1");
+
+            //ASSERT
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ModificarProducto_SinToken_DevuelveUnauthorized()
+        {
+            //ACT
+            var response = await _client.PutAsJsonAsync($"{RutaBase}/1", new ProductoModificarDto { Id = 1, Nombre = "test", Precio = 123, Stock = 123 });
+
+            //ASSERT
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ModificarProducto_ComoUsuario_DevuelveForbidden()
+        {
+            //ARRANGE
+            var token = await _fixture.ObtenerTokenUsuarioAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            //ACT
+
+            var response = await _client.PutAsJsonAsync($"{RutaBase}/1", new ProductoModificarDto { Id = 1, Nombre = "test", Precio = 123, Stock = 123 });
+
+            //ASSERT
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task PostProducto_SinToken_DevuelveUnauthorized()
+        {
+            //ACT
+            var response = await _client.PostAsJsonAsync($"{RutaBase}", new ProductoCrearDto { Nombre = "test", Precio = 123, Stock = 123 });
+
+            //ASSERT
+
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task PostProducto_ComoUsuario_DevuelveForbidden()
+        {
+            //ARRANGE
+            var token = await _fixture.ObtenerTokenUsuarioAsync();
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            //ACT
+            var response = await _client.PostAsJsonAsync($"{RutaBase}", new ProductoCrearDto { Nombre = "test", Precio = 123, Stock = 123 });
+
+            //ASSERT
+
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        }
+
     }
 }

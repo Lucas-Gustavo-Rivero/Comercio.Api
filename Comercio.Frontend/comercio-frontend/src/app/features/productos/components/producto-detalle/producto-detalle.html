@@ -1,0 +1,85 @@
+<div class="container mt-4">
+  <a routerLink="/productos" class="btn btn-outline-secondary btn-sm mb-4">
+    &larr; Volver al catálogo
+  </a>
+  @if (cargando()) {
+    <div class="d-flex justify-content-center my-5">
+      <div class="spinner-border text-secondary" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+    </div>
+  }
+  @if (noEncontrado() && !cargando()) {
+    <div class="alert alert-warning text-center" role="alert">
+      <h5 class="alert-heading">Producto no encontrado</h5>
+      <p class="mb-0">El producto que buscás no existe o fue eliminado.</p>
+    </div>
+  }
+  @if (error() && !cargando()) {
+    <div class="alert alert-danger text-center" role="alert">
+      <h5 class="alert-heading">Ocurrió un error</h5>
+      <p class="mb-0">No pudimos cargar el producto. Intentá de nuevo más tarde.</p>
+    </div>
+  }
+  @if (producto(); as p) {
+    @if (!cargando() && !noEncontrado() && !error()) {
+      <div class="row g-4">
+        <div class="col-12 col-md-6">
+          <img
+            [src]="p.urlImagen ? p.urlImagen : 'https://via.placeholder.com/500x500?text=Sin+Imagen'"
+            [alt]="p.nombre"
+            class="img-fluid rounded shadow-sm"
+          >
+        </div>
+        <div class="col-12 col-md-6">
+          <h2 class="mb-2">{{ p.nombre }}</h2>
+          @if (p.stock > 0) {
+            <span class="badge bg-success mb-3">En stock ({{ p.stock }} unidades)</span>
+          } @else {
+            <span class="badge bg-danger mb-3">Sin stock</span>
+          }
+          <p class="fs-3 fw-bold text-dark mb-3">
+            {{ p.precio | currency:'USD' }}
+          </p>
+          @if (p.descripcion) {
+            <p class="text-muted">{{ p.descripcion }}</p>
+          } @else {
+            <p class="text-muted fst-italic">Sin descripción disponible.</p>
+          }
+          <hr class="my-4">
+          
+          <div class="d-flex align-items-center gap-3 mb-4">
+            <div class="input-group" style="width: 120px;">
+              <button class="btn btn-outline-secondary" type="button" (click)="modificarCantidad(-1)">-</button>
+              <input type="text" class="form-control text-center px-0" [value]="cantidad()" readonly>
+              <button class="btn btn-outline-secondary" type="button" (click)="modificarCantidad(1)">+</button>
+            </div>
+            
+            <button class="btn btn-dark px-4 flex-grow-1" [disabled]="p.stock === 0 || agregando()" (click)="agregarAlCarrito()">
+              @if (agregando()) {
+                <span class="spinner-border spinner-border-sm"></span>
+              } @else {
+                Agregar al carrito
+              }
+            </button>
+          </div>
+
+          <div class="d-flex gap-2">
+            @if (authService.esAdministrador()) {
+              <a [routerLink]="['/productos', p.id, 'editar']" class="btn btn-outline-primary px-4">
+                Modificar
+              </a>
+              <button class="btn btn-outline-danger px-4" (click)="eliminarProducto()">
+                Eliminar
+              </button>
+            }
+          </div>
+
+          @if (mensajeCarrito()) {
+            <div class="alert alert-success mt-3 shadow-sm border-0">{{ mensajeCarrito() }}</div>
+          }
+        </div>
+      </div>
+    }
+  }
+</div>

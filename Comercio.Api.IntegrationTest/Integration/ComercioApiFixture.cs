@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net.Http.Json;
 using System.Text;
 using Comercio.Api.Data;
+using Comercio.Api.DTOs.User;
+using Comercio.Api.Models;
 using Microsoft.EntityFrameworkCore;
 using Testcontainers;
 using Testcontainers.MsSql;
@@ -9,7 +12,7 @@ using Testcontainers.MsSql;
 
 namespace Comercio.Api.IntegrationTest.Integration
 {
-    public class ProductoApiFixture : IAsyncLifetime
+    public class ComercioApiFixture : IAsyncLifetime
     {
         private readonly MsSqlContainer _msSqlContainer = new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
        
@@ -37,6 +40,40 @@ namespace Comercio.Api.IntegrationTest.Integration
 
             _factory = new ComercioApiFactory(connectionString);
             HttpClient = _factory.CreateClient();
+        }
+
+        public async Task<string> ObtenerTokenAdminAsync()
+        {
+            return await CrearUsuarioYObtenerTokenAsync(Roles.Administrador);
+        }
+
+        public async Task<string> ObtenerTokenUsuarioAsync()
+        {
+            return await CrearUsuarioYObtenerTokenAsync(Roles.Usuario);
+        }
+
+        private async Task<string> CrearUsuarioYObtenerTokenAsync(Roles rol)
+        {
+            string email = $"{rol}-{Guid.NewGuid()}@test.com";
+            const string password = "test123456789";
+
+            var usuario = new User
+            {
+                Email = email,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(password),
+                NombreCompleto = $"test de prueba - {rol}",
+                Rol = rol
+            };
+
+            DbContext.Users.Add(usuario);
+            await DbContext.SaveChangesAsync();
+
+            var loginDto = new LoginDto { Email = email, Password = password };
+            var response = await HttpClient.PostAsJsonAsync("/api/auth/login", loginDto);
+
+            var resultado = await response.Content.ReadFromJsonAsync<AuthResponseDto>();
+
+            return resultado!.Token;
         }
     }
 }

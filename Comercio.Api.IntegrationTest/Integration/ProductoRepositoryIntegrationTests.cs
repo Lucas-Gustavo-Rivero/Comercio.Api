@@ -7,11 +7,11 @@ using System.Text;
 
 namespace Comercio.Api.IntegrationTest.Integration
 {
-    public class ProductoRepositoryIntegrationTests: IClassFixture<ProductoApiFixture>
+    public class ProductoRepositoryIntegrationTests: IClassFixture<ComercioApiFixture>
     {
         private readonly AppDbContext _context;
 
-        public ProductoRepositoryIntegrationTests(ProductoApiFixture fixture)
+        public ProductoRepositoryIntegrationTests(ComercioApiFixture fixture)
         {
             _context = fixture.DbContext;
         }
